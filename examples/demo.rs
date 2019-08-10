@@ -19,6 +19,4 @@ pub fn main() {
     println!("done!");
 
     clout::shutdown().expect("failed to shutdown clout");
-
-    clout::shutdown().expect("failed to shutdown clout");
 }
