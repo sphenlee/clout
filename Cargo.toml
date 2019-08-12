@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 atty = "^0.2"
 termcolor = "^1.0"
+lazy_static = "^1.3"

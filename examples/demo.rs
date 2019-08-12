@@ -9,8 +9,8 @@ pub fn main() {
         .done()
         .expect("clout failed to init");
 
-    error!("an error");
-    warn!("a warning");
+    error!("an error: {}", 1);
+    warn!("a warning: {}", 2);
     status!("a normal message");
     info!("useful info");
     debug!("debug info");
