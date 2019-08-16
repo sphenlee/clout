@@ -202,7 +202,7 @@ impl Builder {
     pub fn done(self) -> Result<(), CloutError> {
         let mut clout = CLOUT.lock().unwrap();
 
-        if let Some(_) = *clout {
+        if clout.is_some() {
             Err(CloutError::AlreadyInit)
         } else {
             *clout = Some(self.build());
@@ -210,6 +210,13 @@ impl Builder {
         }
     }
 }
+
+impl Default for Builder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 
 /// Construct a new [Builder].
 /// ```
@@ -253,10 +260,11 @@ pub fn emit(level: Level, args: fmt::Arguments) {
             return;
         }
 
-        clout.write.set_color(&level.get_color());
-        clout.write.write_fmt(args);
-        writeln!(clout.write);
-        clout.write.reset();
+        // ignore all the io errors here
+        let _ = clout.write.set_color(&level.get_color());
+        let _ = clout.write.write_fmt(args);
+        let _ = writeln!(clout.write);
+        let _ = clout.write.reset();
     });
 }
 
