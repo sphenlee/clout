@@ -1,4 +1,4 @@
-use clout::{error, warn, status, info, debug, trace};
+use clout::{debug, error, info, status, trace, warn};
 
 pub fn main() {
     clout::init()

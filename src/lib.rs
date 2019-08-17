@@ -16,12 +16,12 @@
 //! This is because typically CLI tools provide 3 levels of verbosity (`-v`, `-vv`, and `-vvv` is
 //! a common practice) but logging only provides two levels below info.
 
-use std::fmt::{self, Display};
-use std::error::Error;
-use std::io::Write;
-use termcolor::{WriteColor, ColorSpec, Color, StandardStream, ColorChoice};
 use lazy_static::lazy_static;
+use std::error::Error;
+use std::fmt::{self, Display};
+use std::io::Write;
 use std::sync::Mutex;
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 /// The different levels of importance of a message
 /// Also used to determine what level of messages should be displayed
@@ -43,7 +43,7 @@ pub enum Level {
     Debug,
     /// Trace is for messages that indicate at a low level what the operation is
     /// doing. Usually too noisy for a bug report, but might be used for debugging.
-    Trace
+    Trace,
 }
 
 impl Level {
@@ -58,8 +58,7 @@ impl Level {
             Level::Warn => {
                 spec.set_fg(Some(Color::Yellow)).set_bold(true);
             }
-            Level::Status => {
-            }
+            Level::Status => {}
             Level::Info => {
                 spec.set_fg(Some(Color::White));
             }
@@ -90,15 +89,16 @@ impl Into<ColorChoice> for UseColor {
         match self {
             UseColor::Never => ColorChoice::Never,
             UseColor::Always => ColorChoice::Auto,
-            UseColor::Auto => if atty::is(atty::Stream::Stdout) {
-                ColorChoice::Auto
-            } else {
-                ColorChoice::Never
-            },
+            UseColor::Auto => {
+                if atty::is(atty::Stream::Stdout) {
+                    ColorChoice::Auto
+                } else {
+                    ColorChoice::Never
+                }
+            }
         }
     }
 }
-
 
 /// Possible errors returned by clout
 #[derive(Debug)]
@@ -120,7 +120,6 @@ impl Display for CloutError {
 
 impl Error for CloutError {}
 
-
 struct Clout {
     level: Level,
     write: StandardStream,
@@ -139,7 +138,10 @@ pub struct Builder {
 impl Builder {
     /// Construct a new builder with default (Status level, Auto colour)
     pub fn new() -> Builder {
-        Self { level: Level::Status, use_color: UseColor::Auto }
+        Self {
+            level: Level::Status,
+            use_color: UseColor::Auto,
+        }
     }
 
     /// Set the message level
@@ -217,7 +219,6 @@ impl Default for Builder {
     }
 }
 
-
 /// Construct a new [Builder].
 /// ```
 /// clout::init()
@@ -242,7 +243,8 @@ pub fn shutdown() -> Result<(), CloutError> {
 }
 
 fn with_clout<F>(f: F)
-where F: FnOnce(&mut Clout) -> ()
+where
+    F: FnOnce(&mut Clout) -> (),
 {
     let mut clout = CLOUT.lock().unwrap();
     if let Some(ref mut inner) = *clout {
