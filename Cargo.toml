@@ -7,6 +7,8 @@ edition = "2018"
 description = "commandline output library"
 license = "MIT"
 repository = "https://github.com/sphenlee/clout"
+documentation = "https://docs.rs/clout"
+readme = "README.md"
 
 keywords = ["cli", "output", "logging"]
 categories = ["command-line-interface"]
