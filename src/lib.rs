@@ -5,6 +5,8 @@
 //! * clout provides output with sensible settings for use in command line tools
 //!    * colours are supported for different message levels
 //!    * output is always to stdout (for now)
+//!    * different output levels are selected using settings aligned with typical
+//!      command line argument conventions
 //!
 //! Many libraries already output messages to the logging framework, and you generally
 //! don't want all these messages to get displayed to the end user. Clout allows you to

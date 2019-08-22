@@ -1,10 +1,10 @@
 [package]
 name = "clout"
-version = "0.0.1"
+version = "0.1.0"
 authors = ["Stephen Lee <sphen.lee@gmail.com>"]
 edition = "2018"
 
-description = "commandline output library - holding package"
+description = "commandline output library"
 license = "MIT"
 
 [dependencies]
