@@ -275,35 +275,35 @@ pub fn emit(level: Level, args: fmt::Arguments) {
 /// Emit an error message
 #[macro_export]
 macro_rules! error {
-    ($($args:tt),+) => ($crate::emit($crate::Level::Error, format_args!($($args),+)))
+    ($($args:tt)*) => ($crate::emit($crate::Level::Error, format_args!($($args)*)))
 }
 
 /// Emit a warning message
 #[macro_export]
 macro_rules! warn {
-    ($($args:tt),+) => ($crate::emit($crate::Level::Warn, format_args!($($args),+)))
+    ($($args:tt)*) => ($crate::emit($crate::Level::Warn, format_args!($($args)*)))
 }
 
 /// Emit a status message
 #[macro_export]
 macro_rules! status {
-    ($($args:tt),+) => ($crate::emit($crate::Level::Status, format_args!($($args),+)))
+    ($($args:tt)*) => ($crate::emit($crate::Level::Status, format_args!($($args)*)))
 }
 
 /// Emit an info message
 #[macro_export]
 macro_rules! info {
-    ($($args:tt),+) => ($crate::emit($crate::Level::Info, format_args!($($args),+)))
+    ($($args:tt)*) => ($crate::emit($crate::Level::Info, format_args!($($args)*)))
 }
 
 /// Emit a debug message
 #[macro_export]
 macro_rules! debug {
-    ($($args:tt),+) => ($crate::emit($crate::Level::Debug, format_args!($($args),+)))
+    ($($args:tt)*) => ($crate::emit($crate::Level::Debug, format_args!($($args)*)))
 }
 
 /// Emit a trace message
 #[macro_export]
 macro_rules! trace {
-    ($($args:tt),+) => ($crate::emit($crate::Level::Trace, format_args!($($args),+)))
+    ($($args:tt)*) => ($crate::emit($crate::Level::Trace, format_args!($($args)*)))
 }

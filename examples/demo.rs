@@ -10,7 +10,7 @@ pub fn main() {
         .expect("clout failed to init");
 
     error!("an error: {}", 1);
-    warn!("a warning: {}", 2);
+    warn!("a warning: {}", 1 + 1);
     status!("a normal message");
     info!("useful info");
     debug!("debug info");

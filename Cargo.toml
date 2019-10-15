@@ -1,6 +1,6 @@
 [package]
 name = "clout"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Stephen Lee <sphen.lee@gmail.com>"]
 edition = "2018"
 
