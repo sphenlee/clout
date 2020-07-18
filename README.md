@@ -15,10 +15,11 @@ don't want all these messages to get displayed to the end user. Clout allows you
 generate output using a logging-style API without having to filter all these messages.
 (In fact you can use clout and logging together eg. by sending the logging messages to a file)
 
-clout includes an additional level between `Warn` and `Info`, called `Status` - this is intended
-for most output messages.
-This is because typically CLI tools provide 3 levels of verbosity (`-v`, `-vv`, and `-vvv` is
-a common practice) but logging only provides two levels below info.
+clout includes additional levels between `Warn` and `Info`. `Status` is intended
+for most output messages, and `Success` is intended to indicate success.
+
+Separating `Info` and `Status`  is because typically CLI tools provide 3 levels of verbosity
+(`-v`, `-vv`, and `-vvv` is a common practice) but logging only provides two levels below info.
 
 ## Quickstart Usage
 
@@ -40,6 +41,7 @@ guidance about which level to use.
 ```rust
     error!("an error");
     warn!("a warining");
+    success!("a success");
     status!("a status message");
     info!("information message");
     debug!("debug message");

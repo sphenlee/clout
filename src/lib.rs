@@ -27,24 +27,32 @@ use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 /// The different levels of importance of a message
 /// Also used to determine what level of messages should be displayed
-#[derive(PartialOrd, PartialEq)]
+#[derive(Copy, Clone, PartialOrd, PartialEq, Debug)]
 pub enum Level {
     /// Display absolutely nothing
     Silent,
-    /// Error is for messages indicating that an operation cannot proceed
+    /// Error is for messages indicating that an operation cannot proceed.
+    /// Styled as bold red.
     Error,
     /// Warn is for messages indicating that an operation will proceed
-    /// but may not do what the user wanted
+    /// but may not do what the user wanted. Styled as bold yellow.
     Warn,
-    /// Status is the usual messages that indicate what an operation is doing
+    /// Success is for messages indicating a successful operation. Generally
+    /// should be output whenever Status is being output.  Styled as green.
+    Success,
+    /// Status is the usual messages that indicate what an operation is doing.
+    /// Unstyled, uses terminal default color.
     Status,
-    /// Info is for messages that the user might find useful but are not essential
+    /// Info is for messages that the user might find useful but are not essential.
+    /// Styled as white (which is often the terminal default, and may not look different
+    /// to Status)
     Info,
     /// Debug is for messages that are useful for the developer, or when submitting
-    /// bug reports, but are not useful for general use
+    /// bug reports, but are not useful for general use. Styled as cyan.
     Debug,
     /// Trace is for messages that indicate at a low level what the operation is
     /// doing. Usually too noisy for a bug report, but might be used for debugging.
+    /// Styled as magenta.
     Trace,
 }
 
@@ -61,6 +69,9 @@ impl Level {
                 spec.set_fg(Some(Color::Yellow)).set_bold(true);
             }
             Level::Status => {}
+            Level::Success => {
+                spec.set_fg(Some(Color::Green));
+            }
             Level::Info => {
                 spec.set_fg(Some(Color::White));
             }
@@ -144,6 +155,11 @@ impl Builder {
             level: Level::Status,
             use_color: UseColor::Auto,
         }
+    }
+
+    /// Get the current message level
+    pub fn level(&self) -> Level {
+        self.level
     }
 
     /// Set the message level
@@ -244,9 +260,9 @@ pub fn shutdown() -> Result<(), CloutError> {
     }
 }
 
-fn with_clout<F>(f: F)
+fn with_clout<F, R>(f: F) -> R
 where
-    F: FnOnce(&mut Clout) -> (),
+    F: FnOnce(&mut Clout) -> R,
 {
     let mut clout = CLOUT.lock().unwrap();
     if let Some(ref mut inner) = *clout {
@@ -258,6 +274,7 @@ where
 
 /// Emit a message with a given level and format_args.
 /// Prefer the specific macros.
+/// Panics if clout has not been initialized yet.
 pub fn emit(level: Level, args: fmt::Arguments) {
     with_clout(|clout| {
         if clout.level < level {
@@ -267,9 +284,17 @@ pub fn emit(level: Level, args: fmt::Arguments) {
         // ignore all the io errors here
         let _ = clout.write.set_color(&level.get_color());
         let _ = clout.write.write_fmt(args);
-        let _ = writeln!(clout.write);
         let _ = clout.write.reset();
+        let _ = writeln!(clout.write);
     });
+}
+
+/// Return the currently configured message level.
+/// Panics if clout has not been initialized yet.
+pub fn level() -> Level {
+    with_clout(|clout| {
+        clout.level
+    })
 }
 
 /// Emit an error message
@@ -282,6 +307,12 @@ macro_rules! error {
 #[macro_export]
 macro_rules! warn {
     ($($args:tt)*) => ($crate::emit($crate::Level::Warn, format_args!($($args)*)))
+}
+
+/// Emit a success message
+#[macro_export]
+macro_rules! success {
+    ($($args:tt)*) => ($crate::emit($crate::Level::Success, format_args!($($args)*)))
 }
 
 /// Emit a status message
