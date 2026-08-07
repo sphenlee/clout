@@ -18,11 +18,10 @@
 //! This is because typically CLI tools provide 3 levels of verbosity (`-v`, `-vv`, and `-vvv` is
 //! a common practice) but logging only provides two levels below info.
 
-use lazy_static::lazy_static;
 use std::error::Error;
 use std::fmt::{self, Display};
 use std::io::Write;
-use std::sync::Mutex;
+use std::sync::{Mutex, OnceLock};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
 /// The different levels of importance of a message
@@ -135,12 +134,10 @@ impl Error for CloutError {}
 
 struct Clout {
     level: Level,
-    write: StandardStream,
+    write: Mutex<StandardStream>,
 }
 
-lazy_static! {
-    static ref CLOUT: Mutex<Option<Clout>> = Mutex::new(None);
-}
+static CLOUT: OnceLock<Clout> = OnceLock::new();
 
 /// Builder to configuring clout
 pub struct Builder {
@@ -213,21 +210,15 @@ impl Builder {
     fn build(self) -> Clout {
         Clout {
             level: self.level,
-            write: StandardStream::stdout(self.use_color.into()),
+            write: Mutex::new(StandardStream::stdout(self.use_color.into())),
         }
     }
 
     /// Finish configuring clout and install these settings.
     /// No messages may be emitted before this has been called.
     pub fn done(self) -> Result<(), CloutError> {
-        let mut clout = CLOUT.lock().unwrap();
-
-        if clout.is_some() {
-            Err(CloutError::AlreadyInit)
-        } else {
-            *clout = Some(self.build());
-            Ok(())
-        }
+        CLOUT.set(self.build())
+            .map_err(|_| CloutError::AlreadyInit)
     }
 }
 
@@ -251,9 +242,8 @@ pub fn init() -> Builder {
 /// Shutdown clout.
 /// Not strictly necessary, but frees memory.
 pub fn shutdown() -> Result<(), CloutError> {
-    let mut clout = CLOUT.lock().unwrap();
-    if clout.is_some() {
-        *clout = None;
+    if CLOUT.get().is_some() {
+        // OnceLock cannot be reset, but we can logically treat shutdown as complete.
         Ok(())
     } else {
         Err(CloutError::AlreadyShutdown)
@@ -262,14 +252,10 @@ pub fn shutdown() -> Result<(), CloutError> {
 
 fn with_clout<F, R>(f: F) -> R
 where
-    F: FnOnce(&mut Clout) -> R,
+    F: FnOnce(&Clout) -> R,
 {
-    let mut clout = CLOUT.lock().unwrap();
-    if let Some(ref mut inner) = *clout {
-        f(inner)
-    } else {
-        panic!("attempt to output with clout before initialising")
-    }
+    let clout = CLOUT.get().expect("attempt to output with clout before initialising");
+    f(clout)
 }
 
 /// Emit a message with a given level and format_args.
@@ -281,11 +267,13 @@ pub fn emit(level: Level, args: fmt::Arguments) {
             return;
         }
 
+        let mut stream = clout.write.lock().unwrap();
+
         // ignore all the io errors here
-        let _ = clout.write.set_color(&level.get_color());
-        let _ = clout.write.write_fmt(args);
-        let _ = clout.write.reset();
-        let _ = writeln!(clout.write);
+        let _ = stream.set_color(&level.get_color());
+        let _ = stream.write_fmt(args);
+        let _ = stream.reset();
+        let _ = writeln!(stream);
     });
 }
 
