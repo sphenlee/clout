@@ -76,7 +76,6 @@ The macros support the usual formatting based on the `format!` macro.
 For more details see the documentation for `clout::Builder`.
 
 ### Shutdown
-Clout can be shutdown to prevent memory leaks if you care about that.
-```rust
-    clout::shutdown().expect("failed to shutdown clout");
-```
+Clout does not require an explicit shutdown. The `shutdown()` function is deprecated
+and is a no-op because the library uses static initialization that cannot be reverted.
+Remove calls to `clout::shutdown()` — they are unnecessary.

@@ -117,15 +117,12 @@ impl Into<ColorChoice> for UseColor {
 pub enum CloutError {
     /// Tried to initialise clout when it's already initialised
     AlreadyInit,
-    /// Tried to shutdown clout when it's already shutdown
-    AlreadyShutdown,
 }
 
 impl Display for CloutError {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
             CloutError::AlreadyInit => write!(f, "clout already initialised"),
-            CloutError::AlreadyShutdown => write!(f, "clout already shutdown"),
         }
     }
 }
@@ -240,14 +237,13 @@ pub fn init() -> Builder {
 }
 
 /// Shutdown clout.
-/// Not strictly necessary, but frees memory.
+///
+/// Deprecated: this function is a no-op. Clout uses static initialization and cannot
+/// be reset at runtime, so explicit shutdown is unnecessary and effectively does
+/// nothing. Existing calls can be removed safely.
+#[deprecated(since = "0.2.0", note = "shutdown is a no-op; static clout cannot be reset")]
 pub fn shutdown() -> Result<(), CloutError> {
-    if CLOUT.get().is_some() {
-        // OnceLock cannot be reset, but we can logically treat shutdown as complete.
-        Ok(())
-    } else {
-        Err(CloutError::AlreadyShutdown)
-    }
+    Ok(())
 }
 
 fn with_clout<F, R>(f: F) -> R

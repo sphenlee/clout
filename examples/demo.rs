@@ -18,6 +18,4 @@ pub fn main() {
     trace!("tracing");
 
     println!("done!");
-
-    clout::shutdown().expect("failed to shutdown clout");
 }
